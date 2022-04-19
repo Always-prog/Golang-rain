@@ -17,17 +17,25 @@ type Drop struct {
 	is_broken bool
 }
 
-type Land struct {
+type Brick struct {
 	x int 
 	y int 
 	symbol string
 }
 
-var LANDS = []Land{}
-var DROPS = []Drop{}
-var LANDS_COUNT = 1
+//Bricks settings
+var BRICKS = []Brick{}
+var BRICKS_COUNT = 1
+
+//Map setttings
 var MAP_W, MAP_H = consolesize.GetConsoleSize()
+var MAP_BACKGROUND = " "
+
+//Drops settings
+var DROPS = []Drop{}
 var DROPS_COUNT = MAP_W*3
+
+//Hand settings
 var HAND_POS_X = MAP_W/2
 var HAND_POS_Y = MAP_H-1
 
@@ -37,29 +45,30 @@ func get_map() [][]string{
     	MAP[y] = make([]string, MAP_W)
 
     	for x := 0; x < MAP_W; x++ {
-    		MAP[y][x] = " "
+    		MAP[y][x] = MAP_BACKGROUND
 		}
 	}
 	return MAP
 }
+
+func add_brick(x int, y int, symbol string){
+	brick := []Brick{Brick{x: x, y: y, symbol: symbol},}
+	BRICKS = append(BRICKS, brick...)
+}
+
 func render_map() string{
 	MAP := get_map()
 
 	MAP_output := ""
 
-	for i1, row := range MAP {
-        for i2,_ := range row{
-        	MAP[i1][i2] = MAP[i1][i2]
-        }
-	}
 	for _, drop := range DROPS{
 		for i, sym := range drop.symbol {
 			MAP[drop.y][drop.x+i] = sym
 		}
 		
 	}
-	for _, land := range LANDS{
-		MAP[land.y][land.x] = land.symbol
+	for _, brick := range BRICKS{
+		MAP[brick.y][brick.x] = brick.symbol
 	}
 
 	MAP[HAND_POS_Y][HAND_POS_X] = "O"
@@ -87,7 +96,7 @@ func move_drops(){
 	}
 }
 
-func lands_create_handler(){
+func hand_handler(){
 	tty, _ := tty.Open()
     defer tty.Close()
     char, _ := tty.ReadRune()
@@ -95,27 +104,26 @@ func lands_create_handler(){
      case "d":
      	if (HAND_POS_X < MAP_W-1){
 	     	HAND_POS_X += 1
-	        LANDS = append(LANDS, []Land{Land{x: HAND_POS_X, y: HAND_POS_Y, symbol: "#"}}...)
+			add_brick(HAND_POS_X, HAND_POS_Y, "#" )
      	}
 
-     
      case "w":
      	if !(HAND_POS_Y <= 0){
         	HAND_POS_Y -= 1
-        	LANDS = append(LANDS, []Land{Land{x: HAND_POS_X, y: HAND_POS_Y, symbol: "#"}}...)
+        	add_brick(HAND_POS_X, HAND_POS_Y, "#" )
      	}
      
      case "a":
      	if !(HAND_POS_X <= 0){
 	     	HAND_POS_X -= 1
-	        LANDS = append(LANDS, []Land{Land{x: HAND_POS_X, y: HAND_POS_Y, symbol: "#"}}...)	
+			add_brick(HAND_POS_X, HAND_POS_Y, "#" )	
      	}
 
      
      case "s":
      	if (HAND_POS_Y < MAP_H-1){
      	     HAND_POS_Y += 1
-        	LANDS = append(LANDS, []Land{Land{x: HAND_POS_X, y: HAND_POS_Y, symbol: "#"}}...)
+			add_brick(HAND_POS_X, HAND_POS_Y, "#" )
      	}
 
      } 
@@ -123,9 +131,9 @@ func lands_create_handler(){
 }
 
 func broke_drops(){
-	for _, land := range LANDS{
+	for _, brick := range BRICKS{
 		for drop_i, drop := range DROPS{
-			if (land.y-1 == drop.y && land.x == drop.x || drop.y >= MAP_H-1){
+			if (brick.y-1 == drop.y && brick.x == drop.x || drop.y >= MAP_H-1){
 				DROPS[drop_i].symbol = []string{"*", "'"}
 				DROPS[drop_i].is_broken = true
 			}
@@ -153,11 +161,10 @@ func spawn_new_drop(start_y int){
 	DROPS = append(DROPS, Drop{x: x, y: y, symbol: []string{"|"}})
 
 }
-func spawn_new_land(){
+func spawn_new_brick(){
 	y := rand.Intn(MAP_H - 0) + 0
 	x := rand.Intn(MAP_W - 0) + 0
-	land := []Land{Land{x: x, y: y, symbol: "-"},}
-	LANDS = append(LANDS, land...)
+	add_brick(x, y, "-")
 
 }
 func init_drops(){
@@ -165,9 +172,9 @@ func init_drops(){
     	spawn_new_drop(MAP_H)
 	}
 }
-func init_lands(){
-	for i := 0; i < LANDS_COUNT; i++ {
-    	spawn_new_land()
+func init_bricks(){
+	for i := 0; i < BRICKS_COUNT; i++ {
+    	spawn_new_brick()
 	}
 }
 
@@ -176,22 +183,26 @@ func fps_pause(){
 }
 
 func raining(){
+	//Drops moving and broking
 	move_drops()
 	broke_drops()
+    
+    //Map render
 	rendered_map := render_map()
 	clear()
 	print_rendered_map(rendered_map)
-	lands_create_handler()
-	fps_pause()
+
+	//Hand drawing 
+	hand_handler()
+
+	fps_pause() 
 	delete_broken_drops()
-	
-
-
-	raining()
+	raining() 
 }
+
 func main() {
 	init_drops()
-	init_lands()
+	init_bricks()
 	raining()
 
 }
