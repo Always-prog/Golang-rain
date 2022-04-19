@@ -25,7 +25,7 @@ type Brick struct {
 
 //Bricks settings
 var BRICKS = []Brick{}
-var BRICKS_COUNT = 1
+var BRICKS_COUNT = 0
 
 //Map setttings
 var MAP_W, MAP_H = consolesize.GetConsoleSize()
@@ -34,16 +34,18 @@ var MAP_BACKGROUND = " "
 //Drops settings
 var DROPS = []Drop{}
 var DROPS_COUNT = MAP_W*3
+var DROP_SYMBOL = "|"
 
 //Hand settings
 var HAND_POS_X = MAP_W/2
 var HAND_POS_Y = MAP_H-1
+var HAND_HEAD = "O"
 
+//Base function for getting map by console size
 func get_map() [][]string{
 	MAP := make([][]string, MAP_H)
 	for y := 0; y < MAP_H; y++{
     	MAP[y] = make([]string, MAP_W)
-
     	for x := 0; x < MAP_W; x++ {
     		MAP[y][x] = MAP_BACKGROUND
 		}
@@ -51,6 +53,8 @@ func get_map() [][]string{
 	return MAP
 }
 
+
+// ### Pshyhics and Logic ###
 func add_brick(x int, y int, symbol string){
 	brick := []Brick{Brick{x: x, y: y, symbol: symbol},}
 	BRICKS = append(BRICKS, brick...)
@@ -60,17 +64,16 @@ func add_drop(x int, y int, symbol []string){
 	DROPS = append(DROPS, drop...)
 }
 func spawn_new_drop(start_y int){
-	y := rand.Intn(start_y - 0) + 0
-	x := rand.Intn(MAP_W - 1) + 0
-	DROPS = append(DROPS, Drop{x: x, y: y, symbol: []string{"|"}})
+	x, y := rand.Intn(MAP_W - 1), rand.Intn(start_y - 0) 
+	DROPS = append(DROPS, Drop{x: x, y: y, symbol: []string{DROP_SYMBOL}})
 
 }
 func spawn_new_brick(){
-	y := rand.Intn(MAP_H - 0) + 0
-	x := rand.Intn(MAP_W - 0) + 0
+	x, y :=  rand.Intn(MAP_W - 0), rand.Intn(MAP_H - 0)
 	add_brick(x, y, "-")
 
 }
+// Inits
 func init_drops(){
 	for i := 0; i < DROPS_COUNT; i++ {
     	spawn_new_drop(MAP_H)
@@ -82,7 +85,44 @@ func init_bricks(){
 	}
 }
 
+func move_drops(){
+	for i, drop := range DROPS{
+		if !(drop.y >= MAP_H-1){
+		DROPS[i].y = drop.y + 1
+			
+		}
+	}
+}
 
+func broke_drops(){
+	for drop_i, drop := range DROPS{
+		if (drop.y >= MAP_H-1){
+			DROPS[drop_i].symbol = []string{"*", "'"}
+			DROPS[drop_i].is_broken = true
+			continue
+		}
+		for _, brick := range BRICKS{
+			if (brick.y-1 == drop.y && brick.x == drop.x){
+				DROPS[drop_i].symbol = []string{"*", "'"}
+				DROPS[drop_i].is_broken = true
+			}
+		}
+	}
+	
+}
+
+func delete_broken_drops(){
+	for i, drop := range DROPS{
+		if (drop.is_broken){
+			DROPS = DROPS[:i+copy(DROPS[i:], DROPS[i+1:])] 
+			spawn_new_drop(3)
+		}
+	}
+}
+
+
+
+// ### MAP Render And Showing ###
 func render_map() string{
 	MAP := get_map()
 
@@ -98,7 +138,7 @@ func render_map() string{
 		MAP[brick.y][brick.x] = brick.symbol
 	}
 
-	MAP[HAND_POS_Y][HAND_POS_X] = "O"
+	MAP[HAND_POS_Y][HAND_POS_X] = HAND_HEAD
 
 
 	for i1, row := range MAP {
@@ -109,20 +149,21 @@ func render_map() string{
 	}
 	return MAP_output
 }
-
 func print_rendered_map(MAP string){
 	fmt.Print(MAP)
 }
 
-func move_drops(){
-	for i, drop := range DROPS{
-		if !(drop.y >= MAP_H-1){
-		DROPS[i].y = drop.y + 1
-			
-		}
-	}
+func clear(){
+	cmd := exec.Command("clear")
+	cmd.Stdout = os.Stdout
+    cmd.Run()
+}
+func fps_pause(){
+	time.Sleep(20 * time.Millisecond)
 }
 
+
+// ### Drawing Hand ###
 func hand_handler(){
 	tty, _ := tty.Open()
     defer tty.Close()
@@ -157,36 +198,8 @@ func hand_handler(){
     
 }
 
-func broke_drops(){
-	for _, brick := range BRICKS{
-		for drop_i, drop := range DROPS{
-			if (brick.y-1 == drop.y && brick.x == drop.x || drop.y >= MAP_H-1){
-				DROPS[drop_i].symbol = []string{"*", "'"}
-				DROPS[drop_i].is_broken = true
-			}
-		}
-	} 
-}
-
-func delete_broken_drops(){
-	for i, drop := range DROPS{
-		if (drop.is_broken){
-			DROPS = DROPS[:i+copy(DROPS[i:], DROPS[i+1:])] 
-			spawn_new_drop(3)
-		}
-	}
-}
-func clear(){
-	cmd := exec.Command("clear")
-	cmd.Stdout = os.Stdout
-    cmd.Run()
-}
 
 
-
-func fps_pause(){
-	time.Sleep(20 * time.Millisecond)
-}
 
 func raining(){
 	//Drops moving and broking
