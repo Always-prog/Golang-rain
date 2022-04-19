@@ -1,4 +1,4 @@
-# Golang-rain
+# Inconsole Rain
 Animed rain in terminal, created with using golang
 
 It is my first repository with using golang.
