@@ -62,6 +62,8 @@ func render_map() string{
 		MAP[land.y][land.x] = land.symbol
 	}
 
+	MAP[HAND_POS_Y][HAND_POS_X] = "O"
+
 
 	for i1, row := range MAP {
         for i2,_ := range row{
@@ -154,19 +156,7 @@ func spawn_new_drop(start_y int){
 func spawn_new_land(){
 	y := rand.Intn(MAP_H - 0) + 0
 	x := rand.Intn(MAP_W - 0) + 0
-	land := []Land{Land{x: x, y: y, symbol: "-"},
-	Land{x: x+1, y: y, symbol: "-"},
-	// Land{x: x+2, y: y, symbol: "-"},
-	// Land{x: x+3, y: y, symbol: "-"},
-	// Land{x: x+4, y: y, symbol: "-"},
-	// Land{x: x+5, y: y, symbol: "-"},
-	// Land{x: x+6, y: y, symbol: "-"},
-	// Land{x: x+7, y: y, symbol: "-"},
-	// Land{x: x+8, y: y, symbol: "-"},
-	// Land{x: x+9, y: y, symbol: "-"},
-	// Land{x: x+10, y: y, symbol: "-"},
-	// Land{x: x+11, y: y, symbol: "-"},
-	 }
+	land := []Land{Land{x: x, y: y, symbol: "-"},}
 	LANDS = append(LANDS, land...)
 
 }
