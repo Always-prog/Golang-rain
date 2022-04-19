@@ -8,3 +8,4 @@ Features:
  - Clicking by WASD will draw bricks, about which a drops brokes.
  - Broking drops have animation
 
+Small video example: https://www.youtube.com/watch?v=vypLwRZyRMA
