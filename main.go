@@ -55,6 +55,33 @@ func add_brick(x int, y int, symbol string){
 	brick := []Brick{Brick{x: x, y: y, symbol: symbol},}
 	BRICKS = append(BRICKS, brick...)
 }
+func add_drop(x int, y int, symbol []string){
+	drop := []Drop{Drop{x: x, y: y, symbol: symbol}}
+	DROPS = append(DROPS, drop...)
+}
+func spawn_new_drop(start_y int){
+	y := rand.Intn(start_y - 0) + 0
+	x := rand.Intn(MAP_W - 1) + 0
+	DROPS = append(DROPS, Drop{x: x, y: y, symbol: []string{"|"}})
+
+}
+func spawn_new_brick(){
+	y := rand.Intn(MAP_H - 0) + 0
+	x := rand.Intn(MAP_W - 0) + 0
+	add_brick(x, y, "-")
+
+}
+func init_drops(){
+	for i := 0; i < DROPS_COUNT; i++ {
+    	spawn_new_drop(MAP_H)
+	}
+}
+func init_bricks(){
+	for i := 0; i < BRICKS_COUNT; i++ {
+    	spawn_new_brick()
+	}
+}
+
 
 func render_map() string{
 	MAP := get_map()
@@ -155,28 +182,7 @@ func clear(){
     cmd.Run()
 }
 
-func spawn_new_drop(start_y int){
-	y := rand.Intn(start_y - 0) + 0
-	x := rand.Intn(MAP_W - 1) + 0
-	DROPS = append(DROPS, Drop{x: x, y: y, symbol: []string{"|"}})
 
-}
-func spawn_new_brick(){
-	y := rand.Intn(MAP_H - 0) + 0
-	x := rand.Intn(MAP_W - 0) + 0
-	add_brick(x, y, "-")
-
-}
-func init_drops(){
-	for i := 0; i < DROPS_COUNT; i++ {
-    	spawn_new_drop(MAP_H)
-	}
-}
-func init_bricks(){
-	for i := 0; i < BRICKS_COUNT; i++ {
-    	spawn_new_brick()
-	}
-}
 
 func fps_pause(){
 	time.Sleep(20 * time.Millisecond)
